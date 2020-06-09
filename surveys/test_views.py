@@ -1,7 +1,11 @@
+import datetime
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from surveys.models import Survey, SurveyResponse
+
+from django.utils import timezone
 
 class SurveyTests(APITestCase):
     def test_create_survey(self):
@@ -9,12 +13,12 @@ class SurveyTests(APITestCase):
         Ensure we can create a new survey object.
         """
         url = 'http://testserver/surveys/'
-        data = {'name': 'test1', 'available_places': 1, 'user_id': 1}
+        data = {'name': 'test_create_survey', 'available_places': 1, 'user_id': 1}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Survey.objects.count(), 1)
         self.assertEqual(Survey.objects.get().id, 1)
-        self.assertEqual(Survey.objects.get().name, 'test1')
+        self.assertEqual(Survey.objects.get().name, 'test_create_survey')
         self.assertEqual(Survey.objects.get().available_places, 1)
         self.assertEqual(Survey.objects.get().user_id, 1)
 
@@ -22,11 +26,29 @@ class SurveyTests(APITestCase):
         """
         Ensure we can list created surveys.
         """
-        Survey(name='test2', available_places=1, user_id=1).save()
+        Survey(name='test_list_surveys', available_places=1, user_id=1).save()
         url = 'http://testserver/surveys/'
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, [{'id': 1, 'name': 'test2', 'available_places': 1, 'user_id': 1}])
+        self.assertEqual(response.data, [{'id': 1, 'name': 'test_list_surveys', 'available_places': 1, 'user_id': 1}])
+
+    def test_responses_to_survey(self):
+        """
+        Ensure we can list created responses for a survey.
+        """
+        now = timezone.now()
+        Survey(name='test responses_to_survey', available_places=1, user_id=1).save()
+        survey = Survey.objects.get()
+        self.assertEqual(survey.id, 1)
+        SurveyResponse(survey=survey, user_id=2, created_at=now).save()
+
+        url = 'http://testserver/surveys/1/responses/'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['id'], 1)
+        self.assertEqual(response.data[0]['survey_id'], 1)
+        self.assertEqual(response.data[0]['user_id'], 2)
+        self.assertIsNotNone(response.data[0]['created_at'])
 
 
 class SurveyResponseTests(APITestCase):
