@@ -39,8 +39,8 @@ class SurveyTests(APITestCase):
         """
         Survey(name='test3', available_places=1, user_id=1).save()
 
-        url = 'http://testserver/survey-responses/'
-        data = {'survey_id': 1, 'user_id': 2}
+        url = 'http://testserver/surveys/1/responses/'
+        data = {'user_id': 2}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(SurveyResponse.objects.count(), 1)

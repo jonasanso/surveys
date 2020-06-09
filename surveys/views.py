@@ -27,17 +27,27 @@ def surveys(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def responses_to_survey(request, pk):
+@api_view(['GET', 'POST'])
+def responses_to_survey(request, survey_id):
     """
     Retrieve survey responses for survey identified by pk.
     """
     if request.method == 'GET':
-        responses = SurveyResponse.objects.filter(survey__pk = pk)
+        responses = SurveyResponse.objects.filter(survey__pk = survey_id)
         serializer = SurveyResponseSerializer(responses, many=True)
         return Response(serializer.data)
+    elif request.method == 'POST':
+        request.data['survey_id'] = survey_id
+        serializer = SurveyResponseSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except NoMoreAvailablePlacesError: 
+                return Response(status=status.HTTP_410_GONE)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 def survey_responses(request):
     """
     List all surveys responses optionally filtered by user_id, or create a new survey response.
@@ -51,12 +61,3 @@ def survey_responses(request):
         serializer = SurveyResponseSerializer(responses, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
-        serializer = SurveyResponseSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except NoMoreAvailablePlacesError: 
-                return Response(status=status.HTTP_410_GONE)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
