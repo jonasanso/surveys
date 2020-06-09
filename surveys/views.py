@@ -8,10 +8,14 @@ from surveys.serializers import SurveySerializer, SurveyResponseSerializer
 @api_view(['GET', 'POST'])
 def surveys(request):
     """
-    List all surveys, or create a new survey.
+    List surveys with optinal user_id filter, or create a new survey.
     """
     if request.method == 'GET':
-        surveys = Survey.objects.all()
+        user_id = request.query_params.get('user_id', None)
+        if user_id is not None:
+            surveys = Survey.objects.filter(user_id=user_id)
+        else: 
+            surveys = Survey.objects.all()
         serializer = SurveySerializer(surveys, many=True)
         return Response(serializer.data)
 
@@ -36,10 +40,14 @@ def responses_to_survey(request, pk):
 @api_view(['GET', 'POST'])
 def survey_responses(request):
     """
-    List all surveys responses, or create a new survey response.
+    List all surveys responses optionally filtered by user_id, or create a new survey response.
     """
     if request.method == 'GET':
-        responses = SurveyResponse.objects.all()
+        user_id = request.query_params.get('user_id', None)
+        if user_id is not None:
+            responses = SurveyResponse.objects.filter(user_id=user_id)
+        else: 
+            responses = SurveyResponse.objects.all()
         serializer = SurveyResponseSerializer(responses, many=True)
         return Response(serializer.data)
 
