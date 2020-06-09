@@ -1,0 +1,2 @@
+class NoMoreAvailablePlacesError(Exception):
+    pass

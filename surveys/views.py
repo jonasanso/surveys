@@ -1,13 +1,14 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from surveys.models import Survey
-from surveys.serializers import SurveySerializer
+from surveys.exceptions import NoMoreAvailablePlacesError
+from surveys.models import Survey, SurveyResponse
+from surveys.serializers import SurveySerializer, SurveyResponseSerializer
 
 @api_view(['GET', 'POST'])
-def survey_list(request):
+def surveys(request):
     """
-    List all code surveys, or create a new snippet.
+    List all surveys, or create a new survey.
     """
     if request.method == 'GET':
         surveys = Survey.objects.all()
@@ -21,16 +22,33 @@ def survey_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def survey_detail(request, pk):
-    """
-    Retrieve, update or delete a code survey.
-    """
-    try:
-        snippet = Survey.objects.get(pk=pk)
-    except Survey.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+def responses_to_survey(request, pk):
+    """
+    Retrieve survey responses for survey identified by pk.
+    """
     if request.method == 'GET':
-        serializer = SurveySerializer(snippet)
+        responses = SurveyResponse.objects.filter(survey__pk = pk)
+        serializer = SurveyResponseSerializer(responses, many=True)
         return Response(serializer.data)
+
+@api_view(['GET', 'POST'])
+def survey_responses(request):
+    """
+    List all surveys responses, or create a new survey response.
+    """
+    if request.method == 'GET':
+        responses = SurveyResponse.objects.all()
+        serializer = SurveyResponseSerializer(responses, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = SurveyResponseSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except NoMoreAvailablePlacesError: 
+                return Response(status=status.HTTP_410_GONE)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -4,6 +4,7 @@ from surveys.models import Survey, SurveyResponse
 class SurveySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(required=True, max_length=200)
+    available_places = serializers.IntegerField(required=True)
     user_id = serializers.IntegerField(required=True)
 
     def create(self, validated_data):
