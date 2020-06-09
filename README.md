@@ -16,4 +16,9 @@ python manage.py runserver
 ```
 
 # Assumptions
+- Available places can be any positive number
+
+# Outside of scope improvements
+- Do not use INTEGER for the ids and not use autoincrement in production
+
 
