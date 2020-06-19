@@ -24,8 +24,13 @@ Inside test_views you can find all the requests for everyone of the requirements
 # Assumptions
 - Available places can be any whone number including zero limited to integers
 
+# Had I had more time, I would
+- Add more unit tests
+- Add more integration tests
+- Document API
+- Use transactions
+
 # Outside of scope improvements
-- Use transactions. We do not need them much for current requirements but I find it risky.
 - Do not user sqllite3
 - Do not use INTEGER for the ids and not use autoincrement in production
 
