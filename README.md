@@ -11,8 +11,7 @@ git clone git@github.com:jonasanso/surveys.git
 cd surveys
 python -m venv env
 source env/bin/activate
-pip install django
-pip install djangorestframework
+pip install -r requeriments.txt
 python manage.py migrate
 python manage.py runserver
 ```
@@ -25,7 +24,6 @@ Inside test_views you can find all the requests for everyone of the requirements
 - Available places can be any whone number including zero limited to integers
 
 # Had I had more time, I would
-- Use a dependencies framework
 - Add more unit tests
 - Add more integration tests
 - Document API
